@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from telegram import Update, Bot
@@ -40,7 +41,7 @@ NAME, AGE, REGION, ORPHANAGE, ALUMNI, PROBLEM = range(6)
 
 # Define the bot token and the target chat ID
 
-BOT_TOKEN = "7305786297:AAFzC93nebvp7obQOl3NFOx634AnFOHzwyo"
+BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 #admin id 
 TARGET_CHAT_ID = "TARGET_CHAT_ID"
 

@@ -1,32 +1,56 @@
-# What is this?
+# Orphanage Bot
 
-This is a bot that is used for communication between (mainly) Tatarsan orphanage alumni and orphans to get help from volunteers. The bot communicates in Russian and English.
+A bilingual (Russian and English) Telegram bot that connects orphanage alumni and children in Tatarstan with volunteers: tutors, psychologists, lawyers, or help with anything else. A person registers, describes the problem, and an admin team matches them with a volunteer. The volunteer rules and manual were written with Innopolis University professors.
 
-There are 4 types of help that can be provided:
-- Tutor help
-- Psychologist help
-- Lawyer help
-- Other type of request
+Built in 2024 by a volunteer student team at Innopolis University. I worked on the backend: the conversation flow, the database, and the request routing.
 
-There is an admin who receives the messages and can find people to fulfil the request.
-On the admin's side there is a group of volunteers and a manual of rules for providing help to orphanage graduates. The manual was created with the help of Innopolis University professors and other volunteers.
+## Why it matters
 
-# How does the bot work?
+Orphanage graduates often lose access to adults they can ask for help the day they leave. The bot gives them one place to ask, in their own language, and gives volunteers a queue instead of scattered messages.
 
-There are 2 main tasks that the bot performs and a few additional ones. Each function is done asynchronously, at any step of the process the person can cancel and start from the beginning.
+![Bot flow](docs/demo.png)
+*[ADD SCREENSHOT: docs/demo.png, registration and request flow in the Telegram client]*
 
-Registration process
-* The registration process consists of filling in fields such as: name, age, region, orphanage name, status of the person (alumni/not).
-* A person can try to register as many times as they want, but the person will only be added to the database once. Subsequent attempts will only rewrite the fields except User ID.
+## What it does
 
-Requesting help
-* Once a person is registered, they can request help.
-* The request procedure consists of selecting the type of help from list provided above, writing the problem and lastly verifying and saving the message.
+- **Registration:** name, age, region, orphanage, alumni status. A person can re-register; the record is updated, not duplicated.
+- **Requesting help:** pick a category (tutor, psychologist, lawyer, other), describe the problem, confirm. The request is forwarded to the admin.
+- **Error reporting:** any user can send a problem report that reaches the admin.
+- **Language switch:** English or Russian at any point.
+- Every step can be cancelled and restarted.
 
-## Additional Functions
+## Architecture
 
-Reporting errors
-* If there is an error while working with a bot, a person can send a message reporting the problem they encountered. The message will be forwarded to the admin. 
+```
+Telegram user ──▶ bot.py (python-telegram-bot, async ConversationHandler)
+                      │
+                      ├── backend/app.py (Flask + SQLAlchemy): events table, admin endpoints
+                      └── SQLite (backend/instance/events.db)
+```
 
-Changing the language of communication
-* There are two languages available: English and Russian
+## Tech stack
+
+Python 3.9, python-telegram-bot (asyncio), Flask, Flask-SQLAlchemy, SQLite, Docker.
+
+## How to run
+
+```bash
+git clone https://github.com/YehiaSobeh/Orphanage-bot.git
+cd Orphanage-bot/backend
+pip install -r requirements.txt
+export TELEGRAM_BOT_TOKEN=...      # read by backend/app.py and bot.py
+flask run --host 0.0.0.0           # backend
+python3 ../bot.py                  # bot
+```
+
+Or with Docker:
+
+```bash
+cd backend && docker build -t orphanage-bot . && docker run --env TELEGRAM_BOT_TOKEN=... orphanage-bot
+```
+
+## What I learned
+
+- Conversation state machines get complicated fast. Modelling the flow as explicit states (NAME, AGE, REGION, ORPHANAGE, ALUMNI, PROBLEM) with a cancel path from every state kept it debuggable.
+- Idempotent registration (update, never duplicate) matters more than it looks when users retry.
+- Building for real users with non-technical stakeholders means the manual and the rules are part of the product.

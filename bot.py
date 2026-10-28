@@ -1,3 +1,4 @@
+import os
 from telegram import Update, ForceReply
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ConversationHandler, ContextTypes
 import uuid  # Import the uuid library
@@ -197,7 +198,7 @@ async def handle_problem(update: Update, context: CallbackContext):
 
 def main() -> None:
     # Create the Application and pass it your bot's token.
-    application = Application.builder().token("7327293440:AAEwM4CqRoz-JXsqp-lE864M45B6OaOHZ7M").build()
+    application = Application.builder().token(os.environ["TELEGRAM_BOT_TOKEN"]).build()
 
     # Set up conversation handler with the states
     conv_handler_registration = ConversationHandler(
